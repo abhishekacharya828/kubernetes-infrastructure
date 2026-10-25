@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: website-frontend
+  namespace: website
+
+spec:
+  replicas: 4
+
+  selector:
+    matchLabels:
+      app: website-frontend
+
+  template:
+    metadata:
+      labels:
+        app: website-frontend
+
+        
+
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - website-frontend
+              topologyKey: kubernetes.io/hostname  
+
+      containers:
+      - name: frontend
+
+        image: 3.7.142.197:32000/frontend-website_frontend:v3
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 2010
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 2010
+
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 2010
+
+          initialDelaySeconds: 5
+          periodSeconds: 5

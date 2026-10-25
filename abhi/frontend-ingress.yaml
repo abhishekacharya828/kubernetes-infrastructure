@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ride-frontend-ingress
+  namespace: ride
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+spec:
+  ingressClassName: nginx
+
+  tls:
+    - hosts:
+        - ride.dreamwaveinnovation.com
+      secretName: ride-frontend-tls
+
+  rules:
+    - host: ride.dreamwaveinnovation.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ride-frontend-service
+                port:
+                  number: 80

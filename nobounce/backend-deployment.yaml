@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: nobounce-backend
+  namespace: nobounce
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: nobounce-backend
+
+  template:
+    metadata:
+      labels:
+        app: nobounce-backend
+
+    spec:
+      containers:
+      - name: backend
+
+        image: 3.7.142.197:32000/nobounce-backend:v1
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8005
+
+        volumeMounts:
+        - name: settings-volume
+          mountPath: /app/project/settings.py
+          subPath: settings.py 
+
+        - name: settings-env
+          mountPath: /app/.env
+          subPath: .env
+
+        # envFrom:
+        # - configMapRef:
+        #     name: nobounce-env     
+
+        env:
+        - name: HOST
+          value: "ls-46323a0fd3a07d941f5f88ee740bc70ec1d9a4b8.cx8iewg0o38k.ap-south-1.rds.amazonaws.com"
+
+        - name: USER
+          value: "dbmasteruser"
+
+        - name: PASSWORD
+          value: "Zxcvbnm2025"
+
+        - name: NAME
+          value: "email_verifier_db"
+
+        - name: CELERY_BROKER_URL
+          value: "redis://redis:6379/0"  
+
+        - name: CELERY_RESULT_BACKEND
+          value: "redis://redis:6379/0"  
+
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+
+        livenessProbe:
+          tcpSocket:
+            port: 8005
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          tcpSocket:
+            port: 8005
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+          
+      volumes:
+      - name: settings-volume
+        configMap:
+          name: nobounce-settings
+
+      - name: settings-env
+        configMap:
+          name: nobounce-env    

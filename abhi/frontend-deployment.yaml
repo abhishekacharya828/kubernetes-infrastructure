@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: ride-frontend
+  namespace: ride
+
+spec:
+  replicas: 4
+
+  selector:
+    matchLabels:
+      app: ride-frontend
+
+  template:
+    metadata:
+      labels:
+        app: ride-frontend
+
+        
+
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - ride-frontend
+              topologyKey: kubernetes.io/hostname  
+
+      containers:
+      - name: frontend
+        image: 3.7.142.197:32000/rent-a-ride-frontend:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+          initialDelaySeconds: 5
+          periodSeconds: 5

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nobounce-celery
+  namespace: nobounce
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: nobounce-celery
+
+  template:
+    metadata:
+      labels:
+        app: nobounce-celery
+
+    spec:
+      containers:
+      - name: celery
+
+        image: 3.7.142.197:32000/nobounce-backend:v1
+
+        command: ["celery", "-A", "project", "worker", "--loglevel=info"]
+
+        env:
+        - name: DB_HOST
+          value: "ls-46323a0fd3a07d941f5f88ee740bc70ec1d9a4b8.cx8iewg0o38k.ap-south-1.rds.amazonaws.com"
+
+        - name: DB_USER
+          value: "dbmasteruser"
+
+        - name: DB_PASSWORD
+          value: "Zxcvbnm2025"
+
+        - name: DB_NAME
+          value: "email_verifier_db"
+
+        - name: CELERY_BROKER_URL
+          value: "redis://redis:6379/0"
+
+        - name: CELERY_RESULT_BACKEND
+          value: "redis://redis:6379/0"
+
+
+
+        envFrom:
+        - configMapRef:
+            name: nobounce-env

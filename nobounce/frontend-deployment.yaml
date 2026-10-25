@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: nobounce-frontend
+  namespace: nobounce
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: nobounce-frontend
+
+  template:
+    metadata:
+      labels:
+        app: nobounce-frontend
+
+        
+
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - nobounce-frontend
+              topologyKey: kubernetes.io/hostname  
+
+      containers:
+      - name: frontend
+
+        image: 3.7.142.197:32000/nobounce-frontend:latest
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 80
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+          initialDelaySeconds: 15
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
